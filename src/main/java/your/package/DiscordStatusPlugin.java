@@ -63,7 +63,8 @@ public class DiscordStatusPlugin extends JavaPlugin implements Listener {
 
     @Override
     public void onDisable() {
-        sendDiscord("offline");
+        // Используем отдельный поток, чтобы не было ошибки Bukkit Scheduler
+        new Thread(() -> sendDiscordSync("offline")).start();
         getLogger().info("DiscordStatusPlugin disabled.");
     }
 
@@ -184,6 +185,30 @@ public class DiscordStatusPlugin extends JavaPlugin implements Listener {
         });
     }
 
+    private void sendDiscordSync(String state) {
+        String webhookUrl = WEBHOOKS.getOrDefault(state, WEBHOOKS.get("default"));
+        String jsonPayload = buildEmbedPayload(state);
+
+        try {
+            URL url = new URL(webhookUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setDoOutput(true);
+
+            try (OutputStream os = connection.getOutputStream()) {
+                os.write(jsonPayload.getBytes());
+            }
+            connection.getInputStream().close();
+        } catch (Exception e) {
+            getLogger().warning("Failed to send message to Discord: " + e.getMessage());
+        }
+    }
+
+    private String escapeJson(String text) {
+        return text.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n");
+    }
+
     private String buildEmbedPayload(String state) {
         String title = "";
         String description = "";
@@ -216,9 +241,9 @@ public class DiscordStatusPlugin extends JavaPlugin implements Listener {
         }
 
         StringBuilder sb = new StringBuilder();
-        sb.append("{\"embeds\":[{\"title\":\"").append(title).append("\"");
+        sb.append("{\"embeds\":[{\"title\":\"").append(escapeJson(title)).append("\"");
         if (!description.isEmpty()) {
-            sb.append(",\"description\":\"").append(description).append("\"");
+            sb.append(",\"description\":\"").append(escapeJson(description)).append("\"");
         }
         sb.append(",\"color\":").append(color).append("}]}");
         return sb.toString();
