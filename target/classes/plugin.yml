@@ -1,0 +1,26 @@
+name: DiscordStatusPlugin
+main: yourpackage.DiscordStatusPlugin
+version: 1.2
+author: nekit2123
+api-version: 1.21
+commands:
+  sos:
+    description: Enable or disable SOS mode (block join)
+    usage: /sos on|off
+  setprefix:
+    description: Set a player's tab prefix group
+    usage: /setprefix <Player> <Group>
+  addprefix:
+    description: Create a new tab prefix group
+    usage: /addprefix <Group>
+  removeprefix:
+    description: Remove a player's tab prefix group
+    usage: /removeprefix <Player>
+  helpplugin:
+    description: Show all plugin commands and their descriptions
+    usage: /helpplugin
+  setdiscord:
+    description: Change Discord invite link
+    usage: /setdiscord <link>
+    permission: discordstatus.setdiscord
+discord-link: "https://discord.gg/YHSYShaM3A"

@@ -1,0 +1,10 @@
+OnlineModServer/                <-- Корневая папка проекта (без пробелов!)
+│   pom.xml
+└── src/
+    └── main/
+        ├── java/
+        │   └── your/
+        │       └── package/
+        │           └── DiscordStatusPlugin.java
+        └── resources/
+            └── plugin.yml
