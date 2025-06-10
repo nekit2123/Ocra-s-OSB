@@ -24,51 +24,34 @@ public class DiscordStatusPlugin extends JavaPlugin implements Listener {
     private String discordLink;
     private TabManager tabManager;
     private DiscordNotifier discordNotifier;
-private static final String DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1381522946543321199/W4tAN14QkuEe4b2O978-4y84nodZCBi8NukrAY9QB2aFSafLfLiooaGTwjUgU_2rcfEV";
 
-private static final Map<String, String> WEBHOOKS = new HashMap<>();
-static {
-    WEBHOOKS.put("online", DISCORD_WEBHOOK);
-    WEBHOOKS.put("offline", DISCORD_WEBHOOK);
-    WEBHOOKS.put("sos_enabled", DISCORD_WEBHOOK);
-    WEBHOOKS.put("sos_disabled", DISCORD_WEBHOOK);
-    WEBHOOKS.put("default", DISCORD_WEBHOOK);
-}
-    // Map for webhooks by state
+    // ОСТАВИТЬ ТОЛЬКО ЭТО:
+    private static final String DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1381522946543321199/W4tAN14QkuEe4b2O978-4y84nodZCBi8NukrAY9QB2aFSafLfLiooaGTwjUgU_2rcfEV";
     private static final Map<String, String> WEBHOOKS = new HashMap<>();
     static {
-        WEBHOOKS.put("online", "https://share.discohook.app/go/cgofbtvd");
-        WEBHOOKS.put("offline", "https://share.discohook.app/go/p7lxf591");
-        WEBHOOKS.put("sos_enabled", "https://share.discohook.app/go/1nbznwuk");
-        WEBHOOKS.put("sos_disabled", "https://share.discohook.app/go/qfyyvejs");
-        WEBHOOKS.put("default", "https://share.discohook.app/go/rb8p90gt");
+        WEBHOOKS.put("online", DISCORD_WEBHOOK);
+        WEBHOOKS.put("offline", DISCORD_WEBHOOK);
+        WEBHOOKS.put("sos_enabled", DISCORD_WEBHOOK);
+        WEBHOOKS.put("sos_disabled", DISCORD_WEBHOOK);
+        WEBHOOKS.put("default", DISCORD_WEBHOOK);
     }
-
-    private static final String DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1381522946543321199/W4tAN14QkuEe4b2O978-4y84nodZCBi8NukrAY9QB2aFSafLfLiooaGTwjUgU_2rcfEV";
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
-        saveResource("tabconfig.yml", false); // <--- добавьте эту строку
+        saveResource("tabconfig.yml", false);
         tabManager = new TabManager(getConfig(), this);
         Bukkit.getPluginManager().registerEvents(this, this);
 
-        // Автообновление таба раз в 5 секунд:
         new BukkitRunnable() {
             @Override
             public void run() {
                 tabManager.updateTabForAll();
             }
-        }.runTaskTimer(this, 20, 100); // 5 секунд
+        }.runTaskTimer(this, 20, 100);
 
-        // Read Discord link from plugin.yml
         discordLink = getConfig().getString("discord-link", "https://discord.gg/YHSYShaM3A");
-        sendDiscord("Server is now ONLINE!", "online");
         sendDiscord("online");
-        sendDiscord("offline");
-        sendDiscord("sos_enabled");
-        sendDiscord("sos_disabled");
-        sendDiscord("default");
         getLogger().info("DiscordStatusPlugin enabled.");
 
         discordNotifier = new DiscordNotifier(this, WEBHOOKS);
@@ -80,7 +63,7 @@ static {
 
     @Override
     public void onDisable() {
-        sendDiscord("Server is now OFFLINE!", "offline");
+        sendDiscord("offline");
         getLogger().info("DiscordStatusPlugin disabled.");
     }
 
@@ -91,11 +74,11 @@ static {
             if (args.length == 1) {
                 if (args[0].equalsIgnoreCase("on")) {
                     sosEnabled = true;
-                    sendDiscord("SOS mode enabled. Server join is now blocked!", "sos_enabled");
+                    sendDiscord("sos_enabled");
                     sender.sendMessage("§cSOS mode enabled! Joining the server is now blocked.");
                 } else if (args[0].equalsIgnoreCase("off")) {
                     sosEnabled = false;
-                    sendDiscord("SOS mode disabled. Server join is now allowed!", "sos_disabled");
+                    sendDiscord("sos_disabled");
                     sender.sendMessage("§aSOS mode disabled! Joining the server is now allowed.");
                 } else {
                     sender.sendMessage("Usage: /sos on|off");
