@@ -25,16 +25,9 @@ public class DiscordStatusPlugin extends JavaPlugin implements Listener {
     private TabManager tabManager;
     private DiscordNotifier discordNotifier;
 
-    // ОСТАВИТЬ ТОЛЬКО ЭТО:
-    private static final String DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1381522946543321199/W4tAN14QkuEe4b2O978-4y84nodZCBi8NukrAY9QB2aFSafLfLiooaGTwjUgU_2rcfEV";
-    private static final Map<String, String> WEBHOOKS = new HashMap<>();
-    static {
-        WEBHOOKS.put("online", DISCORD_WEBHOOK);
-        WEBHOOKS.put("offline", DISCORD_WEBHOOK);
-        WEBHOOKS.put("sos_enabled", DISCORD_WEBHOOK);
-        WEBHOOKS.put("sos_disabled", DISCORD_WEBHOOK);
-        WEBHOOKS.put("default", DISCORD_WEBHOOK);
-    }
+    private String discordWebhook; // вместо static final
+
+    private Map<String, String> webhooks = new HashMap<>();
 
     @Override
     public void onEnable() {
@@ -42,6 +35,14 @@ public class DiscordStatusPlugin extends JavaPlugin implements Listener {
         saveResource("tabconfig.yml", false);
         tabManager = new TabManager(getConfig(), this);
         Bukkit.getPluginManager().registerEvents(this, this);
+
+        // Загружаем webhook из конфига
+        discordWebhook = getConfig().getString("discord-webhook", "https://discord.com/api/webhooks/ВАШ_ВЕБХУК");
+        webhooks.put("online", discordWebhook);
+        webhooks.put("offline", discordWebhook);
+        webhooks.put("sos_enabled", discordWebhook);
+        webhooks.put("sos_disabled", discordWebhook);
+        webhooks.put("default", discordWebhook);
 
         new BukkitRunnable() {
             @Override
@@ -54,7 +55,7 @@ public class DiscordStatusPlugin extends JavaPlugin implements Listener {
         sendDiscord("online");
         getLogger().info("DiscordStatusPlugin enabled.");
 
-        discordNotifier = new DiscordNotifier(this, WEBHOOKS);
+        discordNotifier = new DiscordNotifier(this, webhooks);
 
         this.getCommand("setprefix").setTabCompleter(tabManager);
         this.getCommand("addprefix").setTabCompleter(tabManager);
@@ -164,7 +165,7 @@ public class DiscordStatusPlugin extends JavaPlugin implements Listener {
     }
 
     private void sendDiscord(String state) {
-        String webhookUrl = WEBHOOKS.getOrDefault(state, WEBHOOKS.get("default"));
+        String webhookUrl = webhooks.getOrDefault(state, webhooks.get("default"));
         String jsonPayload = buildEmbedPayload(state);
 
         Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
@@ -186,7 +187,7 @@ public class DiscordStatusPlugin extends JavaPlugin implements Listener {
     }
 
     private void sendDiscordSync(String state) {
-        String webhookUrl = WEBHOOKS.getOrDefault(state, WEBHOOKS.get("default"));
+        String webhookUrl = webhooks.getOrDefault(state, webhooks.get("default"));
         String jsonPayload = buildEmbedPayload(state);
 
         try {
